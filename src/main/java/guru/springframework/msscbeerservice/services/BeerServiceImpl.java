@@ -21,10 +21,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class BeerServiceImpl implements BeerService {
+
+
+
     private final BeerRepository beerRepository;
     private final BeerMapper beerMapper;
 
-
+    @Cacheable(cacheNames = "beerListCache", condition = "#showInventoryOnHand == false ")
+    @Override
     public BeerPagedList listBeers(String beerName, BeerStyleEnum beerStyle, PageRequest pageRequest, Boolean showInventoryOnHand) {
 
         BeerPagedList beerPagedList;
@@ -68,6 +72,7 @@ public class BeerServiceImpl implements BeerService {
         return beerPagedList;
     }
 
+    @Cacheable(cacheNames = "beerCache", key = "#beerId", condition = "#showInventoryOnHand == false ")
     @Override
     public BeerDto getById(UUID beerId, Boolean showInventoryOnHand) {
         if (showInventoryOnHand) {
@@ -98,5 +103,10 @@ public class BeerServiceImpl implements BeerService {
         return beerMapper.beerToBeerDto(beerRepository.save(beer));
     }
 
+    @Cacheable(cacheNames = "beerUpcCache")
+    @Override
+    public BeerDto getByUpc(String upc) {
+        return beerMapper.beerToBeerDto(beerRepository.findByUpc(upc));
+    }
 
 }
