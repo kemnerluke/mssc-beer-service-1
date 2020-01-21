@@ -11,7 +11,9 @@ import org.springframework.data.domain.Pageable;
 import java.io.Serializable;
 import java.util.List;
 
-
+/**
+ * Created by luke on 2020-01-21.
+ */
 public class BeerPagedList extends PageImpl<BeerDto> implements Serializable {
 
     static final long serialVersionUID = 1114715135625836949L;
