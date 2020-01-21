@@ -17,9 +17,7 @@ import org.springframework.util.StringUtils;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Created by jt on 2019-06-06.
- */
+
 @RequiredArgsConstructor
 @Service
 public class BeerServiceImpl implements BeerService {
@@ -88,6 +86,8 @@ public class BeerServiceImpl implements BeerService {
     @Override
     public BeerDto saveNewBeer(BeerDto beerDto) {
         return beerMapper.beerToBeerDto(beerRepository.save(beerMapper.beerDtoToBeer(beerDto)));
+        //beer repository save method takes in beer object. so need to convert from beerdto to beer
+        //then save method is going to return saved beer object which then gets converted to beerDTO
     }
 
     @Override
