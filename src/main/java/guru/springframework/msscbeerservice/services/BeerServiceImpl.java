@@ -25,20 +25,68 @@ public class BeerServiceImpl implements BeerService {
     private final BeerMapper beerMapper;
 
 
+    public BeerPagedList listBeers(String beerName, BeerStyleEnum beerStyle, PageRequest pageRequest, Boolean showInventoryOnHand) {
 
-    public BeerDto getById(UUID beerId) {
+        BeerPagedList beerPagedList;
+        Page<Beer> beerPage;
+
+        if (!StringUtils.isEmpty(beerName) && !StringUtils.isEmpty(beerStyle)) {
+            //search both
+            beerPage = beerRepository.findAllByBeerNameAndBeerStyle(beerName, beerStyle, pageRequest);
+        } else if (!StringUtils.isEmpty(beerName) && StringUtils.isEmpty(beerStyle)) {
+            //search beer_service name
+            beerPage = beerRepository.findAllByBeerName(beerName, pageRequest);
+        } else if (StringUtils.isEmpty(beerName) && !StringUtils.isEmpty(beerStyle)) {
+            //search beer_service style
+            beerPage = beerRepository.findAllByBeerStyle(beerStyle, pageRequest);
+        } else {
+            beerPage = beerRepository.findAll(pageRequest);
+        }
+
+        if (showInventoryOnHand){
+            beerPagedList = new BeerPagedList(beerPage
+                    .getContent()
+                    .stream()
+                    .map(beerMapper::beerToBeerDtoWithInventory)
+                    .collect(Collectors.toList()),
+                    PageRequest
+                            .of(beerPage.getPageable().getPageNumber(),
+                                    beerPage.getPageable().getPageSize()),
+                    beerPage.getTotalElements());
+        } else {
+            beerPagedList = new BeerPagedList(beerPage
+                    .getContent()
+                    .stream()
+                    .map(beerMapper::beerToBeerDto)
+                    .collect(Collectors.toList()),
+                    PageRequest
+                            .of(beerPage.getPageable().getPageNumber(),
+                                    beerPage.getPageable().getPageSize()),
+                    beerPage.getTotalElements());
+        }
+
+        return beerPagedList;
+    }
+
+    @Override
+    public BeerDto getById(UUID beerId, Boolean showInventoryOnHand) {
+        if (showInventoryOnHand) {
+            return beerMapper.beerToBeerDtoWithInventory(
+                    beerRepository.findById(beerId).orElseThrow(NotFoundException::new)
+            );
+        } else {
             return beerMapper.beerToBeerDto(
                     beerRepository.findById(beerId).orElseThrow(NotFoundException::new)
             );
-
+        }
     }
 
+    @Override
     public BeerDto saveNewBeer(BeerDto beerDto) {
         return beerMapper.beerToBeerDto(beerRepository.save(beerMapper.beerDtoToBeer(beerDto)));
-        //beer repository save method takes in beer object. so need to convert from beerdto to beer
-        //then save method is going to return saved beer object which then gets converted to beerDTO
     }
 
+    @Override
     public BeerDto updateBeer(UUID beerId, BeerDto beerDto) {
         Beer beer = beerRepository.findById(beerId).orElseThrow(NotFoundException::new);
 
