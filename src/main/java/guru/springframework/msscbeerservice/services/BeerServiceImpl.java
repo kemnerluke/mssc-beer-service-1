@@ -89,6 +89,9 @@ public class BeerServiceImpl implements BeerService {
     @Override
     public BeerDto saveNewBeer(BeerDto beerDto) {
         return beerMapper.beerToBeerDto(beerRepository.save(beerMapper.beerDtoToBeer(beerDto)));
+
+        //beer repository save method takes in beer object. so need to convert from beerdto to beer
+        //then save method is going to return saved beer object which then gets converted to beerDTO
     }
 
     @Override
